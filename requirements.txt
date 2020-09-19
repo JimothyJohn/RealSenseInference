@@ -1,0 +1,9 @@
+# RealSenseInference library requirements
+pyrealsense2
+numpy
+ctypes
+scipy
+os
+re
+cv2
+math
