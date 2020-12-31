@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+ARCH=$(lscpu -J | jq .lscpu[0].data --raw-output)
+
+if [[ "$ARCH" == "x86_64" ]]; then
+	echo "Wrong CPU architecture!"
+	exit 1
+fi
+
+xhost +
+sudo docker run --gpus all -it --rm --net=host --runtime nvidia \
+	-v $HOME/github/RealSenseTrainer/rst:/rst \
+	-v $HOME/data:/data -e DISPLAY=$DISPLAY \
+	-v /tmp/.X11-unix/:/tmp/.X11-unix \
+	--device=/dev/video0:/dev/video0 \
+	--device=/dev/video1:/dev/video1 \
+	--device=/dev/video2:/dev/video2 \
+	jetson-realsense:latest
