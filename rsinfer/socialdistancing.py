@@ -1,7 +1,7 @@
 # Import Numpy for easy array manipulation
 import numpy as np
 # Import KDTree for 3D coordinate comparison
-from scipy.spatial import KDTree
+# from scipy.spatial import KDTree
 import cv2
 import time
 import threading
@@ -11,7 +11,7 @@ import jetson.inference as ji
 import jetson.utils as ju
 
 # First import the library
-import pyrealsense2 as prs2
+from pyrealsense2 import pyrealsense2 as prs2
 # Import standard tools
 import sys
 import argparse
@@ -28,6 +28,7 @@ def findViolators(xyz_locations, social_distance):
     
     if len(xyz_locations) < 2: return None # skip if only one detection present
     violator_list = [] # initialize list
+    '''
     dist_tree = KDTree(xyz_locations) # create KD Tree
     for location in xyz_locations:
         # Extract distances under 2m and their corresponding indexes
@@ -39,7 +40,8 @@ def findViolators(xyz_locations, social_distance):
             if idx < len(xyz_locations) and idx not in violator_list:
                 violator_list.append(idx) # add to list of violators
                 break # move to next detection location):
-    
+    '''
+
     return violator_list
 
 width, height, fps = 640, 480, 30 # "low-res"
@@ -48,7 +50,7 @@ channels = 4
 
 ## Configured JetsonDetect input
 # Load the networks
-detect_network = 'pednet'
+detect_network = 'ssd-mobilenet-v2'
 
 rs = rsi.RealSense(width, height, fps)
 detector = rsi.RealDetector(detect_network)
@@ -79,16 +81,18 @@ def captureFrames():
         # Find requested class detections
         if detections is not None: # make sure there's actually a detection
             for detection in detections: # for every found object
+                '''
                 if detector.network.GetClassDesc(detection.ClassID) == target_classes[0]: # if it is the target
                     if detector.network.GetClassDesc(detection.ClassID) == target_classes[0]: # if it is the target
-                        # Add BB corners to list
-                        bb_locations.append([int(detection.Left),
-                                            int(detection.Right),
-                                            int(detection.Top),
-                                            int(detection.Bottom)])
-                        ## Extract XYZ positions
-                        x, y, z = rsi.Locate3D(rs, int(detection.Center[0]),int(detection.Center[1]))
-                        xyz_locations.append([x, y, z]) # add XYZ locations to list
+                '''
+                # Add BB corners to list
+                bb_locations.append([int(detection.Left),
+                                    int(detection.Right),
+                                    int(detection.Top),
+                                    int(detection.Bottom)])
+                ## Extract XYZ positions
+                x, y, z = rsi.Locate3D(rs, int(detection.Center[0]),int(detection.Center[1]))
+                xyz_locations.append([x, y, z]) # add XYZ locations to list
 
                 # Get list of violators
                 violator_list = findViolators(xyz_locations, 2000)
